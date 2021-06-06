@@ -1,5 +1,5 @@
 #include "Header.h"
-
+float d=0;
 
 
 int main()
@@ -85,4 +85,19 @@ if( d <= 100)
 }
 else
   GPIO_PORTF_DATA_R |=0X08 ;    //green led is on 
+}
+
+//Calculating Distance between two point
+double distance(double lati1, double long1, double lati2, double long2){
+  const int ROE = 6371; //Radius of earth in (km)
+  double phi1 = degtorad(lati1);
+  double phi2 = degtorad(lati2);
+  double del1 = degtorad(lati2 - lati1);
+  double del2 = degtorad(long2 - long1);
+
+  double x = sin(del1 / 2) * sin(del1 / 2) + cos(phi1) * cos(phi2) * sin(del2 / 2) * sin(del2 / 2);
+  double y = 2 * atan2(sqrt(x), sqrt(1 - x));
+  double z = ROE * y;
+
+  return d += z;
 }

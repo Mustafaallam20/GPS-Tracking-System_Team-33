@@ -10,3 +10,4 @@ void PortE_Init();
 double degtorad(double degree);
 void PortB_Init();
 void ledOn(double d);
+double distance(double lati1, double long1, double lati2, double long2);

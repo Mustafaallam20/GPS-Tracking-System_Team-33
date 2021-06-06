@@ -101,3 +101,9 @@ double distance(double lati1, double long1, double lati2, double long2){
 
   return d += z;
 }
+
+//Time delay function
+void delay(int time){
+  int tmp = time*3180;
+  while(tmp--);
+}

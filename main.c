@@ -1,4 +1,5 @@
 #include "Header.h"
+
 float d=0;
 
 
@@ -9,6 +10,7 @@ int main()
 			
 	}
 }
+
 
 
 // Initialization of Port F pins
@@ -26,6 +28,8 @@ while((SYSCTL_PRGPIO_R&0x20)==0){};
   GPIO_PORTF_AFSEL_R &= ~0x0E;               
   GPIO_PORTF_DEN_R |= 0x0E;
   GPIO_PORTF_DATA_R &= ~0x0E;
+	
+	
 }
 // Initialization of Port D pins
 void PortD_Init(void)
@@ -42,6 +46,8 @@ while((SYSCTL_PRGPIO_R&0x08)==0){};
 	GPIO_PORTD_AFSEL_R &= ~0x0F;
 	GPIO_PORTD_DEN_R |= 0x0F;
 }
+
+
 // Initialization of Port E pins
 void PortE_Init(void)
 {
@@ -57,10 +63,14 @@ GPIO_PORTB_AMSEL_R&=~ 0xEf;
 GPIO_PORTB_AFSEL_R&=~ 0xEf;
 GPIO_PORTB_PCTL_R&=~ 0xEf;
 }
+
+
 //from degree to radian
 double degtorad(double degree){
   return (degree * PI / 180);
 } 
+
+
 // Initialization of Port B pins
 void PortB_Init(void)
 {
@@ -76,6 +86,9 @@ GPIO_PORTB_AMSEL_R&=~ 0x1F;
 GPIO_PORTB_AFSEL_R|=0x03;
 GPIO_PORTB_PCTL_R|=0x000000FF;
 }
+
+
+
 //function that turns on the LED when the distance exceeds 100 meters.
 void ledOn(double d)
 {
@@ -86,6 +99,9 @@ if( d <= 100)
 else
   GPIO_PORTF_DATA_R |=0X08 ;    //green led is on 
 }
+
+
+
 
 //Calculating Distance between two point
 double distance(double lati1, double long1, double lati2, double long2){
@@ -102,8 +118,34 @@ double distance(double lati1, double long1, double lati2, double long2){
   return d += z;
 }
 
+
+
+
 //Time delay function
 void delay(int time){
   int tmp = time*3180;
   while(tmp--);
+}
+
+
+
+
+//function that will display the output distance on the 3-digit 7 segments.
+ void seven_segment(int one, int two, int three){
+
+  GPIO_PORTB_DATA_R |= 0x1c; // turn off all digits
+  GPIO_PORTB_DATA_R &= ~0x10;
+  GPIO_PORTD_DATA_R = one;
+  delay(5);
+  
+  GPIO_PORTB_DATA_R |= 0x1c; // turn off all digits
+  GPIO_PORTB_DATA_R &= ~0x08;
+  GPIO_PORTD_DATA_R = two;
+  delay(5);
+
+  GPIO_PORTB_DATA_R |= 0x1c; // turn off all digits
+  GPIO_PORTB_DATA_R &= ~0x04;
+  GPIO_PORTD_DATA_R = three;
+  delay(5);
+  
 }

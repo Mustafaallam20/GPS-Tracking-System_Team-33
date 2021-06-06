@@ -61,3 +61,28 @@ GPIO_PORTB_PCTL_R&=~ 0xEf;
 double degtorad(double degree){
   return (degree * PI / 180);
 } 
+// Initialization of Port B pins
+void PortB_Init(void)
+{
+volatile unsigned long delay;
+SYSCTL_RCGCGPIO_R|=0x02;
+while((SYSCTL_PRGPIO_R&0x02)==0){};
+  
+GPIO_PORTB_LOCK_R=0x4C4F434B;
+GPIO_PORTB_CR_R|=0x1F;
+GPIO_PORTB_DIR_R|=0xFE;
+GPIO_PORTB_DEN_R|=0x1F;
+GPIO_PORTB_AMSEL_R&=~ 0x1F;
+GPIO_PORTB_AFSEL_R|=0x03;
+GPIO_PORTB_PCTL_R|=0x000000FF;
+}
+//function that turns on the LED when the distance exceeds 100 meters.
+void ledOn(double d)
+{
+if( d <= 100)
+{ 
+	GPIO_PORTF_DATA_R |=0X02 ;    //red led is on 
+}
+else
+  GPIO_PORTF_DATA_R |=0X08 ;    //green led is on 
+}

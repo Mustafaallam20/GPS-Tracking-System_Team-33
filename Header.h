@@ -7,4 +7,6 @@
 void PortF_Init();
 void PortD_Init();
 void PortE_Init();
-void delay(int time);
+double degtorad(double degree);
+void PortB_Init();
+void ledOn(double d);

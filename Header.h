@@ -5,3 +5,5 @@
 #define PI 3.14159265358979323846
 
 void PortF_Init();
+void PortD_Init();
+void PortE_Init();

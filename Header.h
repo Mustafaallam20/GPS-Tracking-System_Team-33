@@ -21,3 +21,5 @@ void UART2_Write(uint8_t data);
 
 double deg_do_decimal_gps(char *str);
 void Receive_GPS_Data();
+void rev(char *str, int len) ;
+void ftoa(float n, char *res, int afterpoint) ;

@@ -13,3 +13,5 @@ void ledOn(double d);
 double distance(double lati1, double long1, double lati2, double long2);
 
 void delay(int time);
+void delayMs(unsigned long t);
+void delayUs(unsigned long t);

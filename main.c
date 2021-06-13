@@ -107,3 +107,33 @@ void delay(int time){
   int tmp = time*3180;
   while(tmp--);
 }
+void delayMs(unsigned long t)
+{
+	long i , j;
+	   i = 0;
+	   j = 0;
+	  while(i<t){
+       while(j<3180){
+				 j++;
+			 //Do Nothing
+			 }
+			 i++;
+	  }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		
+
+		
+void delayUs(unsigned long t){
+	long i , j;
+	   i = 0;
+	   j = 0;
+	  while(i<t){
+       while(j<3){
+				 j++;
+			 //Do Nothing
+			 }
+			 i++;
+	  }
+}

@@ -226,3 +226,43 @@ void Receive_GPS_Data(){
         lat[lat_cnt++] =  Gpsdata; // latitude
         flg = 0;
        }
+
+	      if(com_cnt == 5 && flg == 1 && flg_2){
+         lg[log_cnt++] =  Gpsdata; // Longitude
+         flg = 0;
+       }
+ 
+       if( Gpsdata == '*' && com_cnt >= 5){
+         flg = 0;
+         finish = 1;
+         }
+        }
+    }
+		
+		cur_lat = deg_do_decimal_gps(lat);
+		cur_lon = deg_do_decimal_gps(lg);
+		
+		if(start){
+			prev_lat = cur_lat;
+			prev_lon = cur_lon;
+			start = 0;
+		}
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+double deg_do_decimal_gps(char *str){
+    char deg[4] = {0};
+		uint8_t i;
+		for(i = 0; i < 3 ; i++)
+			deg[i] = str[i];
+		
+    return atof(deg) + (atof(&str[3]) / 60);
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+		void delay_1msec(int n){
+	int i, j;
+	for(i = 0; i < n; i++)
+	for(j = 0; j < 3180; j++){}
+}

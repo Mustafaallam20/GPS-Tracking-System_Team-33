@@ -187,3 +187,42 @@ void UART2_Write(uint8_t data){
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Receive_GPS_Data(){
+    int Gpsdata; // for incoming serial data
+    int finish = 0; // indicate end of message
+    int pos_cnt = 0; // position counter
+    int lat_cnt = 0; // latitude data counter
+    int log_cnt = 0; // longitude data counter
+    int flg = 0; // GPS flag
+    int com_cnt = 0; // comma counter
+    int flg_2 = 1;
+	
+		prev_lat = cur_lat;
+		prev_lon = cur_lon;
+	
+    while(finish == 0){
+      while((UART2_FR_R & 0x10) != 1>0){ // Check GPS data
+        Gpsdata = UART2_DR_R;
+        flg = 1;
+        if( Gpsdata == '$' && pos_cnt == 0) pos_cnt++;
+        if( Gpsdata == 'G' && pos_cnt == 1) pos_cnt++;
+        if( Gpsdata == 'P' && pos_cnt == 2) pos_cnt++;
+        if( Gpsdata == 'R' && pos_cnt == 3) pos_cnt++;
+        if( Gpsdata == 'M' && pos_cnt == 4) pos_cnt++;
+        if( Gpsdata == 'C' && pos_cnt == 5) pos_cnt++;
+        if(pos_cnt == 6 &&  Gpsdata == ','){ // count commas in message
+            com_cnt++;
+            flg = 0;
+       }
+
+       if(com_cnt == 2 && Gpsdata == 'V'){
+                finish = 1;
+                flg = 0;
+                flg_2 = 0;
+        }
+ 
+       if(com_cnt == 3 && flg == 1 && flg_2){
+        lat[lat_cnt++] =  Gpsdata; // latitude
+        flg = 0;
+       }

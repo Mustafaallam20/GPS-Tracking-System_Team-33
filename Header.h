@@ -18,3 +18,5 @@ void UART2_Init();
 uint8_t UART2_Available(void);
 uint8_t UART2_Read(void);
 void UART2_Write(uint8_t data);
+
+double deg_do_decimal_gps(char *str);

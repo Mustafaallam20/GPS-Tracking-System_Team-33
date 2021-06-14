@@ -329,3 +329,73 @@ void ftoa(float n, char *res, int afterpoint)
         intToStr((int)fpart, res + i + 1, afterpoint); 
     } 
 } 
+
+void LCD_init(void)
+{
+SYSCTL->RCGCGPIO |= 0x01; /* enable clock to GPIOA */
+SYSCTL->RCGCGPIO |= 0x02; /* enable clock to GPIOB */
+LCD_CTRL->DIR |= 0xE0; /* set PORTA pin 7-5 as output for control */
+LCD_CTRL->DEN |= 0xE0; /* set PORTA pin 7-5 as digital pins */
+LCD_DATA->DIR = 0xFF; /* set all PORTB pins as output for data */
+LCD_DATA->DEN = 0xFF; /* set all PORTB pins as digital pins */
+delayMs(20); /* initialization sequence */
+LCD_command(0x30);
+delayMs(5);
+LCD_command(0x30);
+delayUs(100);
+LCD_command(0x30);
+LCD_command(0x38); /* set 8-bit data, 2-line, 5x7 font */
+LCD_command(0x06); /* move cursor right */
+LCD_command(0x01); /* clear screen, move cursor to home */
+LCD_command(0x0F); /* turn on display, cursor blinking */
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////		
+void LCD_command(unsigned char command)
+{
+LCD_CTRL->DATA = 0; /* RS = 0, R/W = 0 */
+LCD_DATA->DATA = command;
+LCD_CTRL->DATA = EN; /* pulse E */
+delayUs(0);
+LCD_CTRL->DATA = 0;
+if (command < 4)
+delayMs(2); /* command 1 and 2 needs up to 1.64ms */
+else
+delayUs(40); /* all others 40 us */
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////		
+void LCD_data(unsigned char data)
+{
+LCD_CTRL->DATA = RS; /* RS = 1, R/W = 0 */
+LCD_DATA->DATA = data;
+LCD_CTRL->DATA = EN | RS; /* pulse E */
+delayUs(1000);
+LCD_CTRL->DATA = 0;
+delayUs(40);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void LCD_print_line(char* str){
+	uint8_t i = 0;
+	while(str[i]){
+		LCD_data(str[i]);
+		i++;
+	}
+}
+
+// reverses a string 'str' of length 'len' 
+void reverse(char *str, int len) 
+{ 
+    int i=0, j=len-1, temp; 
+    while (i<j) 
+    { 
+        temp = str[i]; 
+        str[i] = str[j]; 
+        str[j] = temp; 
+        i++; j--; 
+    } 
+} 

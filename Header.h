@@ -11,15 +11,7 @@ double degtorad(double degree);
 void PortB_Init();
 void ledOn(double d);
 double distance(double lati1, double long1, double lati2, double long2);
-void delay(int time);
-void seven_segment(int one, int two, int three);
-char UART2_read();
-void UART2_Init();
-uint8_t UART2_Available(void);
-uint8_t UART2_Read(void);
-void UART2_Write(uint8_t data);
 
-double deg_do_decimal_gps(char *str);
-void Receive_GPS_Data();
-void rev(char *str, int len) ;
-void ftoa(float n, char *res, int afterpoint) ;
+void delay(int time);
+void delayMs(unsigned long t);
+void delayUs(unsigned long t);

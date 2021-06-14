@@ -1,17 +1,54 @@
 #include "Header.h"
 
-float d=0;
+double d=0;
+char lat[20];
+char lg[20];       
+double points_list[6][2] = {0};
+int points_in_list = 0;
+double cur_lat, cur_lon;
+double prev_lat, prev_lon;
+uint8_t start = 1;
+char buf[12];
+char disBuf[50] = {50};
+int distnation = 0;
 
+void SystemInit() {
+	SCB->CPACR |= ((3UL << 10*2) | (3UL << 11*2));
+}
 
 int main()
 {
+	
+	PortF_Init();
+	PortA_Init();
+	PortB_Init();
+	UART2_Init();
+	LCD_init();
+	
 	while(1)
 	{
-			
+		LCD_print_line("Distance: ");
+		Receive_GPS_Data();
+		//LCD_print_line("The Distance: ");
+		distance(prev_lat, prev_lon, cur_lat, cur_lon);
+		ftoa(d, buf, 3);
+		LCD_print_line(buf);
+		ledOn(d);
 	}
+
 }
 
 
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 // Initialization of Port F pins
 void PortF_Init(void)
@@ -29,40 +66,45 @@ while((SYSCTL_PRGPIO_R&0x20)==0){};
   GPIO_PORTF_DEN_R |= 0x0E;
   GPIO_PORTF_DATA_R &= ~0x0E;
 	
-	
-}
-// Initialization of Port D pins
-void PortD_Init(void)
-{
-volatile unsigned long delay;
-SYSCTL_RCGCGPIO_R|=0x08;
-while((SYSCTL_PRGPIO_R&0x08)==0){};
-  
-  GPIO_PORTD_LOCK_R=0x4C4F434B;
-  GPIO_PORTD_CR_R |= 0x0F;
-	GPIO_PORTD_AMSEL_R &= ~0x0F;
-	GPIO_PORTD_PCTL_R &= ~0x0F;
-	GPIO_PORTD_DIR_R |=  0x0F;
-	GPIO_PORTD_AFSEL_R &= ~0x0F;
-	GPIO_PORTD_DEN_R |= 0x0F;
 }
 
-
-// Initialization of Port E pins
-void PortE_Init(void)
-{
-volatile unsigned long delay;
-SYSCTL_RCGCGPIO_R|=0x10;
-while((SYSCTL_PRGPIO_R&0x010)==0){};
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+void PortA_Init(){
+  // Initializing Clock and wait until get stabilized
+  SYSCTL_RCGCGPIO_R |= 0x01;
+  while((SYSCTL_PRGPIO_R & 0x01) == 0);
   
-GPIO_PORTB_LOCK_R=0x4C4F434B;
-GPIO_PORTB_CR_R|= 0xEf;
-GPIO_PORTB_DIR_R|= 0xEF;
-GPIO_PORTB_DEN_R|= 0xEF;
-GPIO_PORTB_AMSEL_R&=~ 0xEf;
-GPIO_PORTB_AFSEL_R&=~ 0xEf;
-GPIO_PORTB_PCTL_R&=~ 0xEf;
+  // Initializing Port A pins
+  GPIO_PORTA_LOCK_R =0x4C4F434B;
+  GPIO_PORTA_CR_R |= 0xE0;
+  GPIO_PORTA_AMSEL_R &= ~0xE0;
+  GPIO_PORTA_PCTL_R &= ~0xFFF00000;
+  GPIO_PORTA_DIR_R |= 0xE0;
+  GPIO_PORTA_AFSEL_R &= ~0xE0;
+  GPIO_PORTA_DEN_R |= 0xE0;
 }
+	/////////////////////////////
+////////////////////////////////////////////////////////////////////////////	/////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+void PortB_Init(){
+  // Initializing Clock and wait until get stablized
+  SYSCTL_RCGCGPIO_R |= 0x02;
+  while((SYSCTL_PRGPIO_R & 0x02) == 0);
+  
+  // Initializing Port B pins
+  GPIO_PORTB_LOCK_R =0x4C4F434B;
+  GPIO_PORTB_CR_R |= 0xFF;
+  GPIO_PORTB_AMSEL_R = 0;
+  GPIO_PORTB_PCTL_R =0;
+  GPIO_PORTB_DIR_R |= 0xFF;
+  GPIO_PORTB_AFSEL_R =0;
+  GPIO_PORTB_DEN_R |= 0xFF;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //from degree to radian
@@ -70,38 +112,21 @@ double degtorad(double degree){
   return (degree * PI / 180);
 } 
 
-
-// Initialization of Port B pins
-void PortB_Init(void)
-{
-volatile unsigned long delay;
-SYSCTL_RCGCGPIO_R|=0x02;
-while((SYSCTL_PRGPIO_R&0x02)==0){};
-  
-GPIO_PORTB_LOCK_R=0x4C4F434B;
-GPIO_PORTB_CR_R|=0x1F;
-GPIO_PORTB_DIR_R|=0xFE;
-GPIO_PORTB_DEN_R|=0x1F;
-GPIO_PORTB_AMSEL_R&=~ 0x1F;
-GPIO_PORTB_AFSEL_R|=0x03;
-GPIO_PORTB_PCTL_R|=0x000000FF;
-}
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //function that turns on the LED when the distance exceeds 100 meters.
-void ledOn(double d)
-{
+void ledOn(double d){
 if( d <= 100)
-{ 
 	GPIO_PORTF_DATA_R |=0X02 ;    //red led is on 
+else{
+  GPIO_PORTF_DATA_R |=0X08 ;    //green led is on
+	while(1);
+}	
 }
-else
-  GPIO_PORTF_DATA_R |=0X08 ;    //green led is on 
-}
 
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Calculating Distance between two point
 double distance(double lati1, double long1, double lati2, double long2){
@@ -119,40 +144,10 @@ double distance(double lati1, double long1, double lati2, double long2){
 }
 
 
-
-
-//Time delay function
-void delay(int time){
-  int tmp = time*3180;
-  while(tmp--);
-}
-
-
-
-
-//function that will display the output distance on the 3-digit 7 segments.
- void seven_segment(int one, int two, int three){
-
-  GPIO_PORTB_DATA_R |= 0x1c; // turn off all digits
-  GPIO_PORTB_DATA_R &= ~0x10;
-  GPIO_PORTD_DATA_R = one;
-  delay(5);
-  
-  GPIO_PORTB_DATA_R |= 0x1c; // turn off all digits
-  GPIO_PORTB_DATA_R &= ~0x08;
-  GPIO_PORTD_DATA_R = two;
-  delay(5);
-
-  GPIO_PORTB_DATA_R |= 0x1c; // turn off all digits
-  GPIO_PORTB_DATA_R &= ~0x04;
-  GPIO_PORTD_DATA_R = three;
-  delay(5);
-  
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UART2_Init(void){ 
-	
-	
     SYSCTL_RCGCUART_R |=0x0004; 
     SYSCTL_RCGCGPIO_R |=0x0008; 
 
@@ -185,8 +180,7 @@ void UART2_Write(uint8_t data){
   while((UART2_FR_R&0x0020) != 0); 
   UART2_DR_R = data; 
 }
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Receive_GPS_Data(){
     int Gpsdata; // for incoming serial data
@@ -226,8 +220,8 @@ void Receive_GPS_Data(){
         lat[lat_cnt++] =  Gpsdata; // latitude
         flg = 0;
        }
-
-	      if(com_cnt == 5 && flg == 1 && flg_2){
+ 
+       if(com_cnt == 5 && flg == 1 && flg_2){
          lg[log_cnt++] =  Gpsdata; // Longitude
          flg = 0;
        }
@@ -241,12 +235,33 @@ void Receive_GPS_Data(){
 		
 		cur_lat = deg_do_decimal_gps(lat);
 		cur_lon = deg_do_decimal_gps(lg);
+
+    points_list[points_in_list][0] = cur_lat;
+    points_list[points_in_list][1] = cur_lon;
+    points_in_list++;
 		
-		if(start){
-			prev_lat = cur_lat;
-			prev_lon = cur_lon;
-			start = 0;
-		}
+
+    if(points_in_list == 5){
+        uint8_t i;
+        cur_lat = 0;
+        cur_lon = 0;
+
+        while(i<5){
+            cur_lat += points_list[i][0];
+            cur_lon += points_list[i][1];
+            i++;
+        }
+        cur_lat /= 5;
+        cur_lon /= 5;
+
+        
+      if(start){
+        prev_lat = cur_lat;
+        prev_lon = cur_lon;
+        start = 0;
+      } 
+        points_in_list = 0;
+    }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,68 +283,44 @@ double deg_do_decimal_gps(char *str){
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		
+void delayMs(unsigned long t)
+{
+	long i , j;
+	   i = 0;
+	   j = 0;
+	  while(i<t){
+       while(j<3180){
+				 j++;
+			 //Do Nothing
+			 }
+			 i++;
+	  }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		
 
-// reverses a string 'str' of length 'len' 
-void rev(char *str, int len) 
-{ 
-    int i=0, j=len-1, temp; 
-    while (i<j) 
-    { 
-        temp = str[i]; 
-        str[i] = str[j]; 
-        str[j] = temp; 
-        i++; j--; 
-    } 
-} 
-  
- // Converts a given integer x to string str[].  d is the number 
- // of digits required in output. If d is more than the number 
- // of digits in x, then 0s are added at the beginning. 
-int intToStr(int x, char str[], int d) 
-{ 
-    int i = 0; 
-    while (x) 
-    { 
-        str[i++] = (x%10) + '0'; 
-        x = x/10; 
-    } 
-  
-    // If number of digits required is more, then 
-    // add 0s at the beginning 
-    while (i < d) 
-        str[i++] = '0'; 
-  
-    rev(str, i); 
-    str[i] = '\0'; 
-    return i; 
-} 
-  
-// Converts a floating point number to string. 
-void ftoa(float n, char *res, int afterpoint) 
-{ 
-    // Extract integer part 
-    int ipart = (int)n; 
-  
-    // Extract floating part 
-    float fpart = n - (float)ipart; 
-  
-    // convert integer part to string 
-    int i = intToStr(ipart, res, 0); 
-  
-    // check for display option after point 
-    if (afterpoint != 0) 
-    { 
-        res[i] = '.';  // add dot 
-  
-        // Get the value of fraction part upto given no. 
-        // of points after dot. The third parameter is needed 
-        // to handle cases like 233.007 
-        fpart = fpart * pow(10, afterpoint); 
-  
-        intToStr((int)fpart, res + i + 1, afterpoint); 
-    } 
-} 
+		
+void delayUs(unsigned long t){
+	long i , j;
+	   i = 0;
+	   j = 0;
+	  while(i<t){
+       while(j<3){
+				 j++;
+			 //Do Nothing
+			 }
+			 i++;
+	  }
+}
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////		
+		
 void LCD_init(void)
 {
 SYSCTL->RCGCGPIO |= 0x01; /* enable clock to GPIOA */
@@ -397,5 +388,66 @@ void reverse(char *str, int len)
         str[i] = str[j]; 
         str[j] = temp; 
         i++; j--; 
+    } 
+} 
+ 
+// reverses a string 'str' of length 'len' 
+void rev(char *str, int len) 
+{ 
+    int i=0, j=len-1, temp; 
+    while (i<j) 
+    { 
+        temp = str[i]; 
+        str[i] = str[j]; 
+        str[j] = temp; 
+        i++; j--; 
+    } 
+} 
+  
+ // Converts a given integer x to string str[].  d is the number 
+ // of digits required in output. If d is more than the number 
+ // of digits in x, then 0s are added at the beginning. 
+int intToStr(int x, char str[], int d) 
+{ 
+    int i = 0; 
+    while (x) 
+    { 
+        str[i++] = (x%10) + '0'; 
+        x = x/10; 
+    } 
+  
+    // If number of digits required is more, then 
+    // add 0s at the beginning 
+    while (i < d) 
+        str[i++] = '0'; 
+  
+    rev(str, i); 
+    str[i] = '\0'; 
+    return i; 
+} 
+  
+// Converts a floating point number to string. 
+void ftoa(float n, char *res, int afterpoint) 
+{ 
+    // Extract integer part 
+    int ipart = (int)n; 
+  
+    // Extract floating part 
+    float fpart = n - (float)ipart; 
+  
+    // convert integer part to string 
+    int i = intToStr(ipart, res, 0); 
+  
+    // check for display option after point 
+    if (afterpoint != 0) 
+    { 
+        res[i] = '.';  // add dot 
+  
+        // Get the value of fraction part upto given no. 
+        // of points after dot. The third parameter is needed 
+        // to handle cases like 233.007 
+        fpart = fpart * pow(10, afterpoint); 
+  
+        intToStr((int)fpart, res + i + 1, afterpoint); 
     } 
 } 
